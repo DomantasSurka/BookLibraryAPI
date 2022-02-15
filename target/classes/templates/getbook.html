@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/29/29302.png">
+    <title>Get book - Book Library</title>
+    <link th:href="@{style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+    <header>
+        <a href="/"><img alt="logo" class="logo" src="https://i.imgur.com/3qMLGEh.png" /></a>
+    </header>
+
+    <div class="container">
+        <h2>Get book by GUID</h2>
+        <p>Please fill in the GUID.</p>
+
+        <form action="#" th:action="@{/getbook}" th:object="${GUID}" method="post">
+            <p>GUID:<br><input type="text" name="bookGUID" /></p>
+            <p><input type="submit" value="Get book"/></p>
+        </form>
+
+        <p class="message">[[${message}]]</p>
+        <a class="return" href="/"><button>» Return «</button></a>
+    </div>
+
+</body>
+</html>

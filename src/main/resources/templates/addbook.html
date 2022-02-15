@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/29/29302.png">
+    <title>Add book - Book Library</title>
+    <link th:href="@{style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+    <header>
+        <a href="/"><img alt="logo" class="logo" src="https://i.imgur.com/3qMLGEh.png" /></a>
+    </header>
+
+    <div class="container">
+        <h2>Add book to library</h2>
+        <p>Please fill in all the details about the book.</p>
+
+        <form action="#" th:action="@{/addbook}" method="post">
+            <p>Name:<br><input type="text" name="book"/></p>
+            <p>Author:<br><input type="text" name="book"/></p>
+            <p>Category:<br><input type="text" name="book"/></p>
+            <p>Language:<br><input type="text" name="book"/></p>
+            <p>Publication date:<br><input type="text" name="book"/></p>
+            <p>ISBN:<br><input type="text" name="book"/></p>
+            <p>GUID:<br><input type="text" name="book"/></p>
+            <p><input type="submit" value="Submit"/></p>
+        </form>
+
+        <p class="message">[[${message}]]</p>
+        <a class="return" href="/"><button>» Return «</button></a>
+    </div>
+
+</body>
+</html>

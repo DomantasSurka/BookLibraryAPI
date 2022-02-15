@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/29/29302.png">
+    <title>Book list - Book Library</title>
+    <link th:href="@{style.css}" rel="stylesheet"/>
+</head>
+<body>
+
+    <header>
+        <a href="/"><img alt="logo" class="logo" src="https://i.imgur.com/3qMLGEh.png" /></a>
+    </header>
+
+    <div class="container">
+        <h2>Books List</h2>
+
+        <div class="filter-div">
+            <div id="filter">
+                <div th:if="'showFilter' != ${showFilter}">
+                    <p>Filter by:</p>
+                    <form id="form1" method="POST">
+                        <select id="selected1" name="selected" value="select" th:disabled="${displayFirstFilter == 0}">
+                            <option value="author">Author</option>
+                            <option value="category">Category</option>
+                            <option value="language">Language</option>
+                            <option value="ISBN">ISBN</option>
+                            <option value="name">Name</option>
+                            <option value="taken or available books">Taken or available books</option>
+                        </select>
+                        <p><input type="submit" name="submit1" value="Continue" th:disabled="${displayFirstFilter == 0}"/>
+                    </form>
+
+                    <div th:if="'show' == ${displaySecondFilter}">
+                        <p>Choose [[${filter}]]:</p>
+                        <form id="form2" method="POST">
+                            <select name="selectedFilter" id="selected2">
+                                <option th:each="parameter : ${parameters}" th:value="${parameter}" th:text="${parameter}">
+                                </option>
+                            </select>
+                            <p><input type="submit" name="submit2" value="Filter"/>
+                        </form>
+                    </div>
+
+                </div>
+
+                <div th:if="'showFilterMessage' == ${showFilterMessage}">
+                    <p>[[${filterMessage}]]</p>
+                    <p><a href="/listbooks"><button>Remove filter</button></a></p>
+                </div>
+            </div>
+            <p class="message">[[${message}]]</p>
+        </div>
+
+        <div class="list-div">
+            <form id="form3" method="POST">
+                <ul>
+                    <li th:each="book : ${books}">
+                        <div class="book-outlines">
+                        <p><span style="color:#000;font-weight:600;font-size:20px;">Book</span><br>
+                        Name: [[${book.name}]]<br>
+                        Author: [[${book.author}]]<br>
+                        Category: [[${book.category}]]<br>
+                        Language: [[${book.language}]]<br>
+                        Publication date: [[${book.publicationDate}]]<br>
+                        ISBN: [[${book.ISBN}]]<br>
+                        GUID: [[${book.GUID}]]<br>
+                        <button type="submit" name="submit3" th:value="${book.GUID}">Remove</button></p>
+                        </div>
+                    </li>
+                </ul>
+            </form>
+        </div>
+        <a class="return" href="/"><button>» Return «</button></a>
+    </div>
+
+</body>
+</html>

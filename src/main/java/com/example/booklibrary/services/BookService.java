@@ -4,10 +4,15 @@ import com.example.booklibrary.models.BookReservation;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 import java.io.*;
-import java.time.LocalDate;
 import java.util.*;
 
 public class BookService {
+
+    private static final JSONParser parser = new JSONParser();
+
+    private static final String reservationsFileLocation = "src\\main\\resources\\reservations.json";
+
+    private static final String libraryFileLocation = "src\\main\\resources\\library.json";
 
     /***
      * Finds a book by its GUID code from books' library file.
@@ -15,28 +20,18 @@ public class BookService {
      * @param GUID GUID code that is unique.
      * @return book with its unique GUID code.
      */
-    public static Book findBookByGUID(String GUID){
-        Book book = new Book();
-        JSONParser parser = new JSONParser();
-        String location = "src\\main\\resources\\library.json";
-        try {
-            JSONArray tmpArr = (JSONArray)parser.parse(new FileReader(location));
-            for(Object obj : tmpArr){
-                JSONObject tmpObj = (JSONObject) obj;
-                if(Objects.equals(tmpObj.get("GUID").toString(), GUID)) {
-                    book.setName(tmpObj.get("Name").toString());
-                    book.setAuthor(tmpObj.get("Author").toString());
-                    book.setCategory(tmpObj.get("Category").toString());
-                    book.setLanguage(tmpObj.get("Language").toString());
-                    book.setPublicationDate(LocalDate.parse(tmpObj.get("Publication date").toString()));
-                    book.setISBN(Integer.parseInt(tmpObj.get("ISBN").toString()));
-                    book.setGUID(tmpObj.get("GUID").toString());
-                    break;
-                }
+    public static Book findBookByGUID (String GUID) {
+        Book book = null;
+        JSONArray libraryArr = readFromFile(libraryFileLocation);
+
+        for (Object obj : libraryArr) {
+            JSONObject bookObj = (JSONObject) obj;
+            if (Objects.equals(bookObj.get("GUID"), GUID)) {
+                book = new Book(bookObj);
+                break;
             }
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
         }
+
         return book;
     }
 
@@ -46,59 +41,43 @@ public class BookService {
      * @return list of books
      */
     public static List<Book> getListOfBooks() {
-        JSONParser parser = new JSONParser();
         List<Book> list = new ArrayList<>();
-        try {
-            JSONArray tmpArr = (JSONArray)parser.parse(new FileReader("src\\main\\resources\\library.json"));
-            for(Object obj : tmpArr){
-                JSONObject tmpObj = (JSONObject) obj;
-                    list.add(new Book(tmpObj.get("Name").toString(), tmpObj.get("Author").toString(), tmpObj.get("Category").toString(), tmpObj.get("Language").toString(),
-                            LocalDate.parse(tmpObj.get("Publication date").toString()), Integer.parseInt(tmpObj.get("ISBN").toString()), tmpObj.get("GUID").toString()));
-            }
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
+        JSONArray libraryArr = readFromFile(libraryFileLocation);
+
+        for(Object obj : libraryArr){
+            JSONObject bookObj = (JSONObject) obj;
+            list.add(new Book(bookObj));
         }
+
         return list;
     }
 
     /***
      * Gets a list of filterBy option parameters. For example, if filterBy
-     * option value is an author, then returns all authors who are written in the books list.
+     * option value is an author, then returns all unique authors who are written in the books list.
      * @param books list of all books.
      * @param filterBy value for filter parameters.
      * @return list of filter's parameters values.
      */
-    public static List<String> getListOfParameters(List<Book> books, String filterBy) {
-        List<String> parameters = new ArrayList<>();
+    public static HashSet<String> getListOfParameters(List<Book> books, String filterBy) {
+        HashSet<String> parameters = new HashSet<>();
+
         if(Objects.equals(filterBy, "taken or available books")){
             parameters.add("Taken");
             parameters.add("Available");
         } else {
             for (Book book : books) {
-                switch (filterBy) {
-                    case "author":
-                        if (!parameters.contains(book.getAuthor()))
-                            parameters.add(book.getAuthor());
-                        break;
-                    case "category":
-                        if (!parameters.contains(book.getCategory()))
-                            parameters.add(book.getCategory());
-                        break;
-                    case "language":
-                        if (!parameters.contains(book.getLanguage()))
-                            parameters.add(book.getLanguage());
-                        break;
-                    case "ISBN":
-                        if (!parameters.contains(book.getISBN().toString()))
-                            parameters.add(book.getISBN().toString());
-                        break;
-                    case "name":
-                        if (!parameters.contains(book.getName()))
-                            parameters.add(book.getName());
-                        break;
-                }
+                parameters.add(switch (filterBy){
+                    case "author" -> book.getAuthor();
+                    case "category" -> book.getCategory();
+                    case "language" -> book.getLanguage();
+                    case "ISBN" -> book.getISBN().toString();
+                    case "name" -> book.getName();
+                    default -> "";
+                });
             }
         }
+
         return parameters;
     }
 
@@ -112,6 +91,7 @@ public class BookService {
      */
     public static List<Book> getBooksByParameters(List<Book> books, String filterBy, String parameter) {
         List<Book> listOfBooks = new ArrayList<>();
+
         if(Objects.equals(parameter, "Taken")){
             listOfBooks = findTakenOrAvailableBooks(books, "Taken");
         } else if(Objects.equals(parameter, "Available")){
@@ -119,29 +99,30 @@ public class BookService {
         } else{
             for (Book book : books) {
                 switch (filterBy) {
-                    case "author":
-                        if (Objects.equals(book.getAuthor(), parameter))
+                    case "author" -> {
+                        if(Objects.equals(book.getAuthor(), parameter))
                             listOfBooks.add(book);
-                        break;
-                    case "category":
+                    }
+                    case "category" -> {
                         if (Objects.equals(book.getCategory(), parameter))
                             listOfBooks.add(book);
-                        break;
-                    case "language":
+                    }
+                    case "language" -> {
                         if (Objects.equals(book.getLanguage(), parameter))
                             listOfBooks.add(book);
-                        break;
-                    case "ISBN":
+                    }
+                    case "ISBN" -> {
                         if (Objects.equals(book.getISBN().toString(), parameter))
                             listOfBooks.add(book);
-                        break;
-                    case "name":
+                    }
+                    case "name" -> {
                         if (Objects.equals(book.getName(), parameter))
                             listOfBooks.add(book);
-                        break;
+                    }
                 }
             }
         }
+
         return listOfBooks;
     }
 
@@ -154,36 +135,34 @@ public class BookService {
      * @return list of Taken or Available books.
      */
     private static List<Book> findTakenOrAvailableBooks(List<Book> books, String parameter){
-        JSONParser parser = new JSONParser();
         List<Book> list = new ArrayList<>();
-        String location = "src\\main\\resources\\reservations.json";
-        try {
-            JSONArray tmpArr = (JSONArray)parser.parse(new FileReader(location));
-            for (Book book : books) {
-                boolean exist = false;
-                for (Object obj : tmpArr) {
-                    JSONObject tmpObj = (JSONObject) obj;
-                    if(Objects.equals(tmpObj.get("GUID").toString(), book.getGUID())) {
-                        exist = true;
-                        break;
-                    }
-                }
-                if(!exist && Objects.equals(parameter, "Available")){
-                    list.add(book);
-                } else if(exist && Objects.equals(parameter, "Taken")){
-                    list.add(book);
+        JSONArray reservationsArr = readFromFile(reservationsFileLocation);
+
+        for (Book book : books) {
+            boolean exist = false;
+
+            for (Object obj : reservationsArr) {
+                JSONObject bookObj = (JSONObject) obj;
+                if(Objects.equals(bookObj.get("GUID"), book.getGUID())) {
+                    exist = true;
+                    break;
                 }
             }
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
+
+            if(!exist && Objects.equals(parameter, "Available")){
+                list.add(book);
+            } else if(exist && Objects.equals(parameter, "Taken")){
+                list.add(book);
+            }
         }
+
         return list;
     }
 
     /***
      * Removes books by GUID from the data file. Parses data file from the storage
-     * and returns its values. Data, that can be removed: books
-     * from the library and person's books' reservations.
+     * and returns its values. Data, that can be removed:
+     * books from the library and person's books' reservations.
      * @param GUID GUID unique code of the book.
      * @param fileName name of the file (library or reservations).
      */
@@ -191,29 +170,19 @@ public class BookService {
         if(!Objects.equals(fileName, "library") && !Objects.equals(fileName, "reservations")){
             throw new IllegalArgumentException("Wrong file name in removeBooksByGUID(String GUID, String fileName)");
         }
-        JSONParser parser = new JSONParser();
-        JSONArray jsonArray = new JSONArray();
+
         String location = "src\\main\\resources\\" + fileName + ".json";
-        try {
-            jsonArray = (JSONArray)parser.parse(new FileReader(location));
-            for(int i = 0; i < jsonArray.size(); i++){
-                JSONObject tmpObj = (JSONObject) jsonArray.get(i);
-                if(Objects.equals(tmpObj.get("GUID").toString(), GUID)) {
-                    jsonArray.remove(i);
-                    i--;
-                }
+        JSONArray dataArray = readFromFile(location);
+
+        for(int i = 0; i < dataArray.size(); i++){
+            JSONObject bookObj = (JSONObject) dataArray.get(i);
+            if(Objects.equals(bookObj.get("GUID"), GUID)) {
+                dataArray.remove(i);
+                i--;
             }
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
         }
-        try {
-            FileWriter file = new FileWriter(location);
-            file.write(jsonArray.toJSONString());
-            file.flush();
-            file.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        writeToFile(location, dataArray);
     }
 
     /***
@@ -224,30 +193,23 @@ public class BookService {
      * @return message about operations' success.
      */
     public static String takeBook(BookReservation bookReservation){
-        String message;
         Book book = findBookByGUID(bookReservation.getBookGUID());
-        if(!Objects.equals(book.getGUID(), null)){
-            // book exists
-            BookReservation reservation = findReservationByGUID(bookReservation.getBookGUID());
-            if(Objects.equals(reservation.getBookGUID(), null)){
-                // book can be reserved
-                Integer count = findCountOfTakenBooks(bookReservation.getPerson());
-                if(count < 3){
-                    saveDataToFile(bookReservation, "reservations");
-                    message = "Book has been successfully taken.";
-                } else{
-                    // max 3 books allowed to be taken.
-                    message = "You have already taken 3 books.";
-                }
-            } else{
-                // book is already taken
-                message = "Book is already reserved.";
-            }
-        } else{
-            // book does not exist
-            message = "Book does not exist. Try typing book's GUID again.";
-        }
-        return message;
+
+        if(Objects.equals(book, null))
+            return "Book does not exist. Try typing book's GUID again.";
+
+        BookReservation reservation = findReservationByGUID(bookReservation.getBookGUID());
+
+        if(!Objects.equals(reservation, null))
+            return "Book is already reserved.";
+
+        Integer count = findCountOfTakenBooks(bookReservation.getPerson());
+
+        if(count >= 3)
+            return "You have already taken 3 books.";
+
+        saveDataToFile(bookReservation, "reservations");
+        return "Book has been successfully taken.";
     }
 
     /***
@@ -257,23 +219,17 @@ public class BookService {
      * @return book reservation.
      */
     private static BookReservation findReservationByGUID(String GUID){
-        BookReservation reservation = new BookReservation();
-        JSONParser parser = new JSONParser();
-        String location = "src\\main\\resources\\reservations.json";
-        try {
-            JSONArray tmpArr = (JSONArray)parser.parse(new FileReader(location));
-            for(Object obj : tmpArr){
-                JSONObject tmpObj = (JSONObject) obj;
-                if(Objects.equals(tmpObj.get("GUID").toString(), GUID)) {
-                    reservation.setPerson(tmpObj.get("Person").toString());
-                    reservation.setPeriod(Integer.parseInt(tmpObj.get("Period").toString()));
-                    reservation.setBookGUID(tmpObj.get("GUID").toString());
-                    break;
-                }
+        BookReservation reservation = null;
+        JSONArray reservationsArr = readFromFile(reservationsFileLocation);
+
+        for(Object obj : reservationsArr){
+            JSONObject reservationObj = (JSONObject) obj;
+            if(Objects.equals(reservationObj.get("GUID"), GUID)) {
+                reservation = new BookReservation(reservationObj);
+                break;
             }
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
         }
+
         return reservation;
     }
 
@@ -285,24 +241,20 @@ public class BookService {
      */
     private static Integer findCountOfTakenBooks(String person){
         Integer count = 0;
-        JSONParser parser = new JSONParser();
-        String location = "src\\main\\resources\\reservations.json";
-        try {
-            JSONArray tmpArr = (JSONArray)parser.parse(new FileReader(location));
-            for(Object obj : tmpArr){
-                JSONObject tmpObj = (JSONObject) obj;
-                if(Objects.equals(tmpObj.get("Person").toString(), person)) {
-                    count++;
-                }
-            }
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
+
+        JSONArray reservationsArr = readFromFile(reservationsFileLocation);
+
+        for(Object obj : reservationsArr){
+            JSONObject reservationsObj = (JSONObject) obj;
+            if(Objects.equals(reservationsObj.get("Person"), person))
+                count++;
         }
+
         return count;
     }
 
     /***
-     * Writes data about books or books reservations to a .json file.
+     * Writes data about books or books reservations to a specific .json file.
      * Book or BookReservation class object can be given as a function parameter.
      * @param object Book or BookReservation object.
      * @param fileName name of the file (library or reservations)
@@ -311,41 +263,56 @@ public class BookService {
         if(!Objects.equals(fileName, "library") && !Objects.equals(fileName, "reservations")){
             throw new IllegalArgumentException("Wrong file name in saveDataToFile(Object object, String fileName)");
         }
-        JSONParser jsonParser = new JSONParser();
-        JSONArray jsonArray = new JSONArray();
+
         String location = "src\\main\\resources\\" + fileName + ".json";
-        try {
-            Object obj = jsonParser.parse(new FileReader(location));
-            jsonArray = (JSONArray) obj;
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
+        JSONArray jsonArray = processDataForStorage(object, fileName, location);
+
+        writeToFile(location, jsonArray);
+    }
+
+    /***
+     * Private method, which tries to process the data of book or reservation and put it into the json array.
+     * Book or BookReservation class object can be given as a function parameter.
+     * @param object Book or BookReservation object.
+     * @param fileName name of the file (library or reservations)
+     * @param location location of the data file
+     * @return JSON array of data file, in which given object was added.
+     */
+    @SuppressWarnings("unchecked")
+    private static JSONArray processDataForStorage(Object object, String fileName, String location) {
+        JSONArray jsonArray = readFromFile(location);
+
+        if (fileName.equals("library")) {
+            JSONObject book = ((Book) object).returnBookAsJSONObject();
+            jsonArray.add(book);
+        } else if (fileName.equals("reservations")) {
+            JSONObject reservation = ((BookReservation) object).returnReservationAsJSONObject();
+            jsonArray.add(reservation);
         }
+
+        return jsonArray;
+    }
+
+    private static void writeToFile(String location, JSONArray data){
         try {
-            if(fileName.equals("library")) {
-                JSONObject newBook = new JSONObject();
-                Book book = (Book) object;
-                newBook.put("Name", book.getName());
-                newBook.put("Author", book.getAuthor());
-                newBook.put("Category", book.getCategory());
-                newBook.put("Language", book.getLanguage());
-                newBook.put("Publication date", book.getPublicationDate().toString());
-                newBook.put("ISBN", book.getISBN());
-                newBook.put("GUID", book.getGUID());
-                jsonArray.add(newBook);
-            } else if(fileName.equals("reservations")) {
-                JSONObject newBook = new JSONObject();
-                BookReservation reservation = (BookReservation) object;
-                newBook.put("Person", reservation.getPerson());
-                newBook.put("Period", reservation.getPeriod());
-                newBook.put("GUID", reservation.getBookGUID());
-                jsonArray.add(newBook);
-            }
             FileWriter file = new FileWriter(location);
-            file.write(jsonArray.toJSONString());
+            file.write(data.toJSONString());
             file.flush();
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static JSONArray readFromFile(String location) {
+        JSONArray jsonArray = null;
+
+        try {
+            jsonArray = (JSONArray) parser.parse(new FileReader(location));
+        } catch (ParseException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return jsonArray;
     }
 }

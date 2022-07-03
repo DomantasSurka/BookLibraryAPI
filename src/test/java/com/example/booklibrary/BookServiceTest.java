@@ -5,6 +5,7 @@ import com.example.booklibrary.services.BookService;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,17 +36,16 @@ class BookServiceTest {
 
     /***
      * Testing method findBookByGUID(),
-     * when there is no book by GUID - method returns empty book object.
+     * when there is no book by GUID - method returns null.
      */
     @Test
-    void findBookByGUID_noBookFound_returnsEmptyBookObject() {
+    void findBookByGUID_noBookFound_returnsNull() {
         // Arrange
             String GUID = "1005T";
         // Act
             Book book = BookService.findBookByGUID(GUID);
         // Assert
-            assertNull(book.getName());
-            assertNull(book.getGUID());
+            assertNull(book);
     }
 
     /***
@@ -120,7 +120,7 @@ class BookServiceTest {
     void getListOfParameters_noParametersFound_returnsEmptyParametersList() {
         // Arrange
             List<Book> list = new ArrayList<>();
-            List<String> parameters;
+            HashSet<String> parameters;
             String filterBy = "Author";
         // Act
             parameters = BookService.getListOfParameters(list, filterBy);
@@ -140,15 +140,16 @@ class BookServiceTest {
             list.add(new Book("Book1", "Author1", "Category1", "Language1", LocalDate.parse("2020-12-12"), 100, "1"));
             list.add(new Book("Book2", "Author2", "Category2", "Language2", LocalDate.parse("2020-12-12"), 200, "2"));
             list.add(new Book("Book3", "Author3", "Category3", "Language3", LocalDate.parse("2020-12-12"), 300, "3"));
-            List<String> parameters;
+            HashSet<String> parameters;
             String filterBy = "author";
         // Act
             parameters = BookService.getListOfParameters(list, filterBy);
+            Object[] parametersArr = parameters.toArray();
         // Assert
             assertEquals(3, parameters.size());
-            assertEquals("Author1", parameters.get(0));
-            assertEquals("Author2", parameters.get(1));
-            assertEquals("Author3", parameters.get(2));
+            assertEquals("Author3", parametersArr[0]);
+            assertEquals("Author2", parametersArr[1]);
+            assertEquals("Author1", parametersArr[2]);
     }
 
     /***
@@ -163,13 +164,14 @@ class BookServiceTest {
             List<Book> list = new ArrayList<>();
             list.add(new Book("Book1", "Author1", "Category", "Language", LocalDate.parse("2020-12-12"), 100, "1"));
             list.add(new Book("Book2", "Author2", "Category", "Language", LocalDate.parse("2020-12-12"), 200, "2"));
-            List<String> parameters;
+            HashSet<String> parameters;
             String filterByCategory = "category";
         // Act
             parameters = BookService.getListOfParameters(list, filterByCategory);
+            Object[] parametersArr = parameters.toArray();
         // Assert
             assertEquals(1, parameters.size());
-            assertEquals("Category", parameters.get(0));
+            assertEquals("Category", parametersArr[0]);
     }
 
     /***

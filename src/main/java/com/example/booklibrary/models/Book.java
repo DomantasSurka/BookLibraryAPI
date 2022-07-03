@@ -1,4 +1,5 @@
 package com.example.booklibrary.models;
+import org.json.simple.JSONObject;
 import java.time.LocalDate;
 
 public class Book {
@@ -29,28 +30,29 @@ public class Book {
         this.GUID = GUID;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Book(JSONObject book){
+        this.name = book.get("Name").toString();
+        this.author = book.get("Author").toString();
+        this.category = book.get("Category").toString();
+        this.language = book.get("Language").toString();
+        this.publicationDate = LocalDate.parse(book.get("Publication date").toString());
+        this.ISBN = Integer.parseInt(book.get("ISBN").toString());
+        this.GUID = book.get("GUID").toString();
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+    @SuppressWarnings("unchecked")
+    public JSONObject returnBookAsJSONObject(){
+        JSONObject newBook = new JSONObject();
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+        newBook.put("Name", this.getName());
+        newBook.put("Author", this.getAuthor());
+        newBook.put("Category", this.getCategory());
+        newBook.put("Language", this.getLanguage());
+        newBook.put("Publication date", this.getPublicationDate().toString());
+        newBook.put("ISBN", this.getISBN());
+        newBook.put("GUID", this.getGUID());
 
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public void setPublicationDate(LocalDate publicationDate) {
-        this.publicationDate = publicationDate;
-    }
-
-    public void setISBN(Integer ISBN) {
-        this.ISBN = ISBN;
+        return newBook;
     }
 
     public void setGUID(String GUID) {
@@ -58,30 +60,30 @@ public class Book {
     }
 
     public String getLanguage() {
-        return language;
+        return this.language;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getAuthor() {
-        return author;
+        return this.author;
     }
 
     public String getCategory() {
-        return category;
+        return this.category;
     }
 
     public LocalDate getPublicationDate() {
-        return publicationDate;
+        return this.publicationDate;
     }
 
     public Integer getISBN() {
-        return ISBN;
+        return this.ISBN;
     }
 
     public String getGUID() {
-        return GUID;
+        return this.GUID;
     }
 }

@@ -1,12 +1,11 @@
 package com.example.booklibrary.models;
+import org.json.simple.JSONObject;
 
 public class BookReservation extends Book {
 
-    private String person;
+    private final String person;
 
-    private Integer period;
-
-    public BookReservation(){}
+    private final Integer period;
 
     public BookReservation(String person, Integer period, String bookGUID) {
         this.person = person;
@@ -14,27 +13,36 @@ public class BookReservation extends Book {
         this.setBookGUID(bookGUID);
     }
 
+    public BookReservation(JSONObject reservation){
+        this.person = reservation.get("Person").toString();
+        this.period = Integer.parseInt(reservation.get("Period").toString());
+        this.setBookGUID(reservation.get("GUID").toString());
+    }
+
+    @SuppressWarnings("unchecked")
+    public JSONObject returnReservationAsJSONObject(){
+        JSONObject newReservation = new JSONObject();
+
+        newReservation.put("Person", this.getPerson());
+        newReservation.put("Period", this.getPeriod());
+        newReservation.put("GUID", this.getBookGUID());
+
+        return newReservation;
+    }
+
     public String getPerson() {
-        return person;
+        return this.person;
     }
 
     public Integer getPeriod() {
-        return period;
+        return this.period;
     }
 
     public String getBookGUID() {
         return getGUID();
     }
 
-    public void setPerson(String person) {
-        this.person = person;
-    }
-
-    public void setPeriod(Integer period) {
-        this.period = period;
-    }
-
     public void setBookGUID(String bookGUID) {
-        this.setGUID(bookGUID);
+        setGUID(bookGUID);
     }
 }
